@@ -17,11 +17,6 @@ services:
             - n8n_data:/home/node/.n8n:delegated
             - ./n8n/custom:/custom:delegated
         environment:
-            # Authentication
-            N8N_BASIC_AUTH_ACTIVE: "true"
-            N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
-            N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
-
             # General settings
             N8N_HOST: ${N8N_DOMAIN}
             N8N_PORT: 5678
@@ -40,6 +35,11 @@ services:
             # Execution behavior
             EXECUTIONS_DATA_SAVE_ON_SUCCESS: "true"
             EXECUTIONS_DATA_SAVE_ON_ERROR: "all"
+
+            # Future-safe n8n defaults
+            N8N_RUNNERS_ENABLED: ${N8N_RUNNERS_ENABLED}
+            N8N_BLOCK_ENV_ACCESS_IN_NODE: ${N8N_BLOCK_ENV_ACCESS_IN_NODE}
+            N8N_GIT_NODE_DISABLE_BARE_REPOS: ${N8N_GIT_NODE_DISABLE_BARE_REPOS}
         labels:
             caddy_0: ${N8N_DOMAIN}
             caddy_0.reverse_proxy: "{{upstreams 5678}}"
