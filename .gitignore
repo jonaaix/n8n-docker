@@ -1,0 +1,5 @@
+.env
+compose.yaml
+.DS_Store
+.vscode/
+.idea/

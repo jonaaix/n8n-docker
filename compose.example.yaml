@@ -1,0 +1,64 @@
+volumes:
+    n8n_data:
+        driver: local
+    postgres:
+        driver: local
+
+networks:
+    main-proxy:
+        external: true
+    app:
+        external: false
+
+services:
+    n8n:
+        image: n8nio/n8n:latest
+        volumes:
+            - n8n_data:/home/node/.n8n:delegated
+            - ./n8n/custom:/custom:delegated
+        environment:
+            # Authentication
+            N8N_BASIC_AUTH_ACTIVE: "true"
+            N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+            N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+
+            # General settings
+            N8N_HOST: ${N8N_DOMAIN}
+            N8N_PORT: 5678
+            N8N_PROTOCOL: https
+            WEBHOOK_URL: https://${N8N_DOMAIN}/
+            GENERIC_TIMEZONE: Europe/Berlin
+
+            # Database configuration (PostgreSQL)
+            DB_TYPE: ${DB_TYPE}
+            DB_POSTGRESDB_HOST: ${DB_HOST}
+            DB_POSTGRESDB_PORT: ${DB_PORT}
+            DB_POSTGRESDB_DATABASE: ${DB_DATABASE}
+            DB_POSTGRESDB_USER: ${DB_USERNAME}
+            DB_POSTGRESDB_PASSWORD: ${DB_PASSWORD}
+
+            # Execution behavior
+            EXECUTIONS_DATA_SAVE_ON_SUCCESS: "true"
+            EXECUTIONS_DATA_SAVE_ON_ERROR: "all"
+        labels:
+            caddy_0: ${N8N_DOMAIN}
+            caddy_0.reverse_proxy: "{{upstreams 5678}}"
+        depends_on:
+            - postgres
+        restart: unless-stopped
+        networks:
+            - app
+            - main-proxy
+
+
+    postgres:
+        image: postgres:16-alpine
+        volumes:
+            - postgres:/var/lib/postgresql/data:delegated
+        environment:
+            POSTGRES_DB: ${DB_DATABASE}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        restart: unless-stopped
+        networks:
+            - app
